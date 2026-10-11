@@ -12,6 +12,7 @@ project:
 
 modes:
   rigor: minimal
+  automation: autonomous
 
 # NOTE: this template ships with no `modes:` block, and the six knobs below must
 # never be added to one.
