@@ -2,48 +2,66 @@ class_name Ship
 extends Node2D
 ## Player ship for one voyage.
 ##
-## Sails at [member sail_speed] along [member heading]. A touch press, a touch
-## drag, or a left mouse-button press aims [member heading] from the ship toward
-## that point in world space. Hover and mouse motion do not change heading.
-##
-## Example:
-##     var ship := Ship.new()
-##     ship.set_heading_toward(ship.global_position + Vector2.RIGHT)
+## Sails at [member sail_speed] along [member heading], then adds the wind and
+## the current. A touch press, a touch drag, or a left mouse-button press aims
+## [member heading] from the ship toward that point. Hover does not.
 
 
 ## Pixels traveled per second along [member heading]. Tuned on the ship scene.
-@export var sail_speed: float = 120.0
+@export var sail_speed: float = 110.0
 
 ## Direction used from the start of the voyage until the first aim.
-## Tuned on the ship scene. A zero vector sails east.
-@export var initial_heading: Vector2 = Vector2.RIGHT
+## Tuned on the ship scene. A zero vector sails west, toward the one coast.
+@export var initial_heading: Vector2 = Vector2.LEFT
 
 ## Unit direction the ship is sailing. Holds until the next aim.
-##
-## Example:
-##     var direction: Vector2 = ship.heading
-var heading: Vector2 = Vector2.RIGHT:
+var heading: Vector2 = Vector2.LEFT:
 	set(value):
-		heading = _unit_or_east(value)
+		heading = _unit_or_west(value)
 		rotation = heading.angle()
+
+## Push from the wind, in pixels per second. The voyage writes this.
+var wind_push: Vector2 = Vector2.ZERO
+
+## Push from the current, in pixels per second. Zero when the ship is off the ribbon.
+var current_push: Vector2 = Vector2.ZERO
+
+var sailing: bool = true
 
 ## Squared distance below which the aim point defines no direction.
 const MIN_AIM_DISTANCE_SQUARED: float = 0.0001
+
+var _wake: Line2D
 
 
 func _ready() -> void:
 	add_to_group(&"player_ship")
 	heading = initial_heading
+	z_index = 6
+	_wake = Line2D.new()
+	_wake.top_level = true
+	_wake.width = 5.0
+	_wake.joint_mode = Line2D.LINE_JOINT_ROUND
+	_wake.begin_cap_mode = Line2D.LINE_CAP_ROUND
+	_wake.end_cap_mode = Line2D.LINE_CAP_ROUND
+	_wake.z_index = 4
+	var fade := Gradient.new()
+	fade.set_color(0, Color(ChartStyle.WAKE, 0.0))
+	fade.set_color(1, ChartStyle.WAKE)
+	_wake.gradient = fade
+	add_child(_wake)
 
 
-func _physics_process(delta: float) -> void:
-	global_position += heading * sail_speed * delta
+func integrate(delta: float) -> void:
+	if not sailing:
+		return
+	global_position += (heading * sail_speed + wind_push + current_push) * delta
+	_lay_wake()
 
 
 func _unhandled_input(event: InputEvent) -> void:
-	# Motion without a press never aims, including when a button mask is set.
-	# A held mouse is delivered again as InputEventScreenDrag when
-	# input_devices/pointing/emulate_touch_from_mouse is enabled.
+	if not sailing:
+		return
 	if event is InputEventMouseMotion:
 		return
 	if event is InputEventScreenTouch:
@@ -57,23 +75,22 @@ func _unhandled_input(event: InputEvent) -> void:
 		return
 	if event is InputEventMouseButton:
 		var button: InputEventMouseButton = event as InputEventMouseButton
-		# Left press only. Device id is not compared: Godot 4.7 reports the
-		# mouse as InputEvent.DEVICE_ID_MOUSE, and an emulated event may use
-		# InputEvent.DEVICE_ID_EMULATION. A joypad may use 0.
 		if button.pressed and not button.canceled and button.button_index == MOUSE_BUTTON_LEFT:
 			_aim_at_viewport_position(button.position)
 
 
 ## Points the ship from its position toward [param world_point] and sails that way.
 ## A point with no direction from the ship leaves [member heading] unchanged.
-##
-## Example:
-##     ship.set_heading_toward(ship.global_position + Vector2(0.0, -1.0))
 func set_heading_toward(world_point: Vector2) -> void:
 	var offset: Vector2 = world_point - global_position
 	if offset.length_squared() < MIN_AIM_DISTANCE_SQUARED:
 		return
 	heading = offset
+
+
+## Ends movement and aim for this voyage. The ship stays where it is.
+func stop_sailing() -> void:
+	sailing = false
 
 
 func _aim_at_viewport_position(viewport_position: Vector2) -> void:
@@ -85,7 +102,13 @@ func _viewport_to_world(viewport_position: Vector2) -> Vector2:
 	return get_viewport().get_canvas_transform().affine_inverse() * viewport_position
 
 
-func _unit_or_east(direction: Vector2) -> Vector2:
+func _lay_wake() -> void:
+	_wake.add_point(global_position)
+	if _wake.get_point_count() > 36:
+		_wake.remove_point(0)
+
+
+func _unit_or_west(direction: Vector2) -> Vector2:
 	if direction.length_squared() < MIN_AIM_DISTANCE_SQUARED:
-		return Vector2.RIGHT
+		return Vector2.LEFT
 	return direction.normalized()

@@ -1,0 +1,67 @@
+class_name WindField
+extends Node2D
+## Trade-wind arrows. The same push moves the ship everywhere on this chart.
+
+
+@export var push: Vector2 = Vector2(-64, -28)
+@export var field_origin: Vector2 = Vector2(-160, -420)
+@export var field_size: Vector2 = Vector2(1500, 980)
+@export var spacing: float = 168.0
+
+var _arrows: Array[Polygon2D] = []
+
+
+func _ready() -> void:
+	z_index = 2
+	_build_arrows()
+
+
+func arrow_count() -> int:
+	return _arrows.size()
+
+
+func vector_at(_world_point: Vector2) -> Vector2:
+	return push
+
+
+func _process(delta: float) -> void:
+	var step := Vector2.ZERO
+	if push.length_squared() > 0.001:
+		step = push.normalized() * 36.0 * delta
+	var bounds := Rect2(field_origin, field_size)
+	for arrow: Polygon2D in _arrows:
+		arrow.position += step
+		arrow.position = _wrap(arrow.position, bounds)
+
+
+func _build_arrows() -> void:
+	var shape := PackedVector2Array([
+		Vector2(22, 0), Vector2(6, 6.5), Vector2(8, 2.2),
+		Vector2(-18, 2.2), Vector2(-18, -2.2), Vector2(8, -2.2), Vector2(6, -6.5),
+	])
+	var columns := int(field_size.x / spacing) + 1
+	var rows := int(field_size.y / spacing) + 1
+	for row: int in rows:
+		for column: int in columns:
+			var arrow := Polygon2D.new()
+			arrow.polygon = shape
+			arrow.color = ChartStyle.WIND
+			arrow.position = field_origin + Vector2(column * spacing, row * spacing)
+			arrow.position += Vector2(0.0 if row % 2 == 0 else spacing * 0.5, 0.0)
+			arrow.rotation = push.angle()
+			arrow.z_index = 2
+			add_child(arrow)
+			_arrows.append(arrow)
+
+
+func _wrap(point: Vector2, bounds: Rect2) -> Vector2:
+	var wrapped := point
+	if wrapped.x < bounds.position.x:
+		wrapped.x += bounds.size.x
+	elif wrapped.x > bounds.end.x:
+		wrapped.x -= bounds.size.x
+	if wrapped.y < bounds.position.y:
+		wrapped.y += bounds.size.y
+	elif wrapped.y > bounds.end.y:
+		wrapped.y -= bounds.size.y
+	return wrapped

@@ -1,7 +1,10 @@
-[gd_scene load_steps=2 format=3]
+[gd_scene load_steps=3 format=3]
 
 [ext_resource type="PackedScene" path="res://src/voyage/ship.tscn" id="1_ship"]
+[ext_resource type="Script" path="res://src/voyage/voyage.gd" id="2_voyage"]
 
 [node name="Voyage" type="Node2D"]
+script = ExtResource("2_voyage")
 
 [node name="Ship" parent="." instance=ExtResource("1_ship")]
+position = Vector2(620, 20)

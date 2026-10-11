@@ -6,10 +6,17 @@ config/name="Claude-Code-Game-Studios"
 config/features=PackedStringArray("4.7", "GL Compatibility")
 run/main_scene="res://src/voyage/voyage.tscn"
 
+[display]
+
+window/size/viewport_width=1280
+window/size/viewport_height=720
+window/stretch/mode="canvas_items"
+window/stretch/aspect="expand"
+
 [rendering]
 
 renderer/rendering_method="gl_compatibility"
-environment/defaults/default_clear_color=Color(0.82, 0.86, 0.84, 1)
+environment/defaults/default_clear_color=Color(0.075, 0.176, 0.188, 1)
 
 ; Main scene is the one-ship voyage from story 001.
 
