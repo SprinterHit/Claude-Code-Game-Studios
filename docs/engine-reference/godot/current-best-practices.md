@@ -1,6 +1,6 @@
 # Godot — Current Best Practices
 
-Last verified: 2026-02-12 | Engine: Godot 4.6
+Last verified: 2026-10-11 for the 4.6.1–4.6.3 section. Sections through 4.6 were last verified 2026-02-12 and were not re-fetched this run. | Engine: Godot 4.6.3
 
 Practices that are **new or changed** since the model's training data (~4.3).
 This supplements (not replaces) the agent's built-in knowledge.
@@ -163,3 +163,17 @@ Sources:
 - **SDL3 gamepad driver**: Better cross-platform gamepad support
 - **Android**: Edge-to-edge display, camera feed access, 16KB page support (Android 15+)
 - **Linux**: Wayland subwindow support for multi-window capability
+
+## Maintenance patches (4.6.1 – 4.6.3)
+
+Fetched 2026-10-11 from the three maintenance articles linked in `VERSION.md`. These are bugfixes on 4.6, not a new API generation. Module files were left unchanged because no significant new subsystem API was stated.
+
+- Each post says there are no known incompatibilities with the previous patch. Back up the project, or keep it in version control, before opening it in a newer editor.
+- Compatibility / GLES3, the renderer this project uses:
+  - LightmapGI probe update speed applies in Compatibility (4.6.3, GH-117771).
+  - GLES3 batching no longer skips every item on specific buffer sizes (4.6.3, GH-117725).
+- Volumetric fog: 4.6.1 uses transmittance instead of opacity in the early-out branch (GH-116107). 4.6.3 adds a project setting to disable the new blending behavior (GH-119414). The setting path is **NOT SOURCEABLE** — the article does not name it.
+- C#: 4.6.1 reverted the `reload_assemblies` performance change (GH-115759). 4.6.3 stops SourceGenerators from becoming a transitive dependency (GH-114868).
+- Android: 4.6.3 fixes back navigation when targeting API level 36 (GH-117653). The 2026 Android versions bump is GH-113761. The target SDK integer is **NOT SOURCEABLE** — the article does not state it.
+- macOS editor only: 4.6.1 binaries downloaded before 2026-02-16 22:30 UTC were missing entitlements and broke .NET and GDExtension until re-downloaded. That is an editor binary, not a project API.
+- 3D Jolt fixes in these patches (discarded transforms, `MoveKinematic`, gravity, inside-out triangles, area overlaps) do not change Godot Physics 2D. This project stays on Godot Physics 2D.

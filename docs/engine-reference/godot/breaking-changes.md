@@ -1,8 +1,38 @@
 # Godot — Breaking Changes
 
-Last verified: 2026-02-12
+Last verified: 2026-10-11 for the 4.6 → 4.6.3 span. Spans through 4.5 → 4.6 were last verified 2026-02-12 and were not re-fetched this run.
 
 Changes between Godot versions, focused on post-LLM-cutoff changes (4.4+).
+
+## 4.6 → 4.6.3 (16 Feb 2026 – 20 May 2026 — POST-CUTOFF, HIGH RISK)
+
+Maintenance releases. Each official post says there are no known incompatibilities with the previous patch, and that a project should be backed up or kept in version control before upgrading.
+
+| Span | Official statement | Source |
+|------|--------------------|--------|
+| 4.6 → 4.6.1 | "As of now, there are no known incompatibilities with the previous Godot 4.6 release." | https://godotengine.org/article/maintenance-release-godot-4-6-1/ |
+| 4.6.1 → 4.6.2 | "As of now, there are no known incompatibilities with the previous Godot 4.6.1 release." Built from commit `001aa128b`. | https://godotengine.org/article/maintenance-release-godot-4-6-2/ |
+| 4.6.2 → 4.6.3 | "As of now, there are no known incompatibilities with the previous Godot 4.6.2 release." Built from commit `35e80b3a8`. | https://godotengine.org/article/maintenance-release-godot-4-6-3/ |
+
+NOT SOURCEABLE — a dedicated 4.6 → 4.6.3 migration guide. `https://docs.godotengine.org/en/4.6/tutorials/migrating/upgrading_to_godot_4.6.3.html` returned 404 on 2026-10-11.
+
+The posts also list fixes that can change observed behavior. They do not label those fixes as incompatibilities. "No known incompatibilities" is the posts' claim; it is not an inventory of the interactive changelogs, which were not fetched.
+
+| Release | Subsystem | Change | Details |
+|---------|-----------|--------|---------|
+| 4.6.1 | C# | Revert of `CSharpLanguage::reload_assemblies` performance change | GH-115759 |
+| 4.6.1 | Particles | Revert of the curve range for particle multipliers | GH-116140 |
+| 4.6.1 | Physics | `SoftBody3D` may have `total_mass` of 0 again | GH-116111 |
+| 4.6.1 | Physics | Jolt transform updates were sometimes discarded | GH-115364. 3D Jolt. This project uses Godot Physics 2D. |
+| 4.6.1 | Rendering | Volumetric fog early-out uses transmittance instead of opacity | GH-116107 |
+| 4.6.1 | Editor binaries | First macOS 4.6.1 binaries before 2026-02-16 22:30 UTC lacked entitlements and broke .NET and GDExtension; they were reuploaded | Editor download, not a project API change |
+| 4.6.2 | Physics | Jolt `MoveKinematic`, gravity on dynamic bodies, inside-out triangles | GH-115327, GH-115305, GH-115089. 3D Jolt. |
+| 4.6.3 | Rendering | Project setting added to disable new volumetric fog blending | GH-119414. Setting path NOT SOURCEABLE — the article does not name it. |
+| 4.6.3 | Rendering | LightmapGI probe update speed applies in Compatibility | GH-117771 |
+| 4.6.3 | Rendering | GLES3 batching no longer skips every item on specific buffer sizes | GH-117725 |
+| 4.6.3 | C# | SourceGenerators no longer become a transitive dependency | GH-114868 |
+| 4.6.3 | Input | Android back navigation when targeting API level 36 | GH-117653 |
+| 4.6.3 | Buildsystem | Annual Android versions bump for 2026 | GH-113761. Target SDK integer NOT SOURCEABLE — the article does not state it. |
 
 ## 4.5 → 4.6 (Jan 2026 — POST-CUTOFF, HIGH RISK)
 
