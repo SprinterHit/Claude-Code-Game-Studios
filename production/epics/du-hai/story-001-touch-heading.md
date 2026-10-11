@@ -1,7 +1,7 @@
 # Story 001: 触摸改变航向
 
 > **Epic**: 读海
-> **Status**: In Progress
+> **Status**: Complete
 > **Last Updated**: 2026-10-11
 > **Layer**: Foundation
 > **Type**: Logic
@@ -84,3 +84,12 @@
 
 - Depends on: None
 - Unlocks: Story 002
+
+---
+
+## Completion Notes
+**Completed**: 2026-10-11
+**Criteria**: 7/7 passing
+**Deviations**: Sail speed 120 is the export default in `src/voyage/ship.gd` and the value on `src/voyage/ship.tscn`.
+**Test Evidence**: Waived at `qa.level: minimal`. A headless behavior run on Godot 4.7.2 printed `STORY001_PASS`. Retained frame: `production/qa/evidence/touch-heading/01-ship-sailing.png`.
+**Code Review**: Skipped (solo)
