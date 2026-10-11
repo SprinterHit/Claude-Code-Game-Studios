@@ -8,7 +8,6 @@ extends Node2D
 ##
 ## Example:
 ##     var ship := Ship.new()
-##     ship.sail_speed = 120.0
 ##     ship.set_heading_toward(ship.global_position + Vector2.RIGHT)
 
 
