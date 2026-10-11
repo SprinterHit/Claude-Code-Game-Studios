@@ -10,7 +10,7 @@
 
 ## Engine & Language
 
-- **Engine**: Godot 4.6.3
+- **Engine**: Godot 4.7.2
 - **Language**: GDScript (gameplay/UI scripting), C# (performance-critical systems), C++ via GDExtension (native only)
 - **Rendering**: Compatibility
 - **Physics**: Godot Physics 2D

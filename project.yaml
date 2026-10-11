@@ -16,7 +16,7 @@ modes:
 
 engine:
   name: "Godot"
-  version: "4.6.3"
+  version: "4.7.2"
   language: "GDScript"
   rendering: "Compatibility"
   physics: "Godot Physics 2D"

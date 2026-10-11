@@ -1,8 +1,15 @@
 # Godot UI — Quick Reference
 
-Last verified: 2026-02-12 | Engine: Godot 4.6
+Last verified: 2026-10-11 for the 4.7 notes. Sections through 4.6 were last verified 2026-02-12 and were not re-fetched this run. | Engine: Godot 4.7.2
 
 ## What Changed Since ~4.3 (LLM Cutoff)
+
+### 4.7 Changes
+- **`Control` offset transforms**: translate, rotate, or scale a control without the parent container wiping it. The 4.7 release post says the offset is visual by default, so the hover or touch target stays put.
+- **`RichTextLabel` images**: `width` and `height` are `float`. `width_in_percent` / `height_in_percent` are now `width_unit` / `height_unit`. `UPDATE_WIDTH_IN_PERCENT` is renamed `UPDATE_WIDTH_UNIT` and that rename is GDScript-incompatible (GH-112617).
+- **New-project stretch**: `canvas_items` and `expand`, previously `disabled` and `keep`.
+- **`PopupMenu` search**: a search bar works on a touchscreen. The older incremental search did not, per the 4.7 release post.
+- **4.7.1**: scene-tree drag-and-drop on touchscreens (GH-120456).
 
 ### 4.6 Changes
 - **Dual-focus system**: Mouse/touch focus is now SEPARATE from keyboard/gamepad focus

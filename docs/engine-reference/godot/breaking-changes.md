@@ -1,8 +1,75 @@
 # Godot — Breaking Changes
 
-Last verified: 2026-10-11 for the 4.6 → 4.6.3 span. Spans through 4.5 → 4.6 were last verified 2026-02-12 and were not re-fetched this run.
+Last verified: 2026-10-11 for the 4.6 → 4.7.2 spans. Spans through 4.5 → 4.6 were last verified 2026-02-12 and were not re-fetched this run.
 
 Changes between Godot versions, focused on post-LLM-cutoff changes (4.4+).
+
+## 4.7 → 4.7.2 (14 Jul 2026 – 18 Aug 2026 — POST-CUTOFF, HIGH RISK)
+
+Maintenance releases. Each official post says there are no known incompatibilities with the previous patch, and that a project should be backed up or kept in version control before upgrading.
+
+| Span | Official statement | Source |
+|------|--------------------|--------|
+| 4.7 → 4.7.1 | "As of now, there are no known incompatibilities with the previous Godot 4.7 release." Built from commit `a13da4feb`. | https://godotengine.org/article/maintenance-release-godot-4-7-1/ |
+| 4.7.1 → 4.7.2 | "As of now, there are no known incompatibilities with the previous Godot 4.7.1 release." Built from commit `ed1daf0bf`. | https://godotengine.org/article/maintenance-release-godot-4-7-2/ |
+
+Fixes in those posts that matter to a touch, mobile, or 2D project. The posts do not label them as incompatibilities.
+
+| Release | Subsystem | Change | Details |
+|---------|-----------|--------|---------|
+| 4.7.1 | GUI | Popup menus no longer open the virtual keyboard automatically | GH-120768 |
+| 4.7.1 | GUI | Scene tree drag-and-drop on touchscreens | GH-120456 |
+| 4.7.1 | Input | Android soft keyboard backspace can delete existing text | GH-119798 |
+| 4.7.2 | GUI | `BaseButton` input when `enable_long_press_as_right_click` is true | GH-120962 |
+
+## 4.6 → 4.7 (18 Jun 2026 — POST-CUTOFF, HIGH RISK)
+
+The migration page says migration from 4.6 is relatively safe for most games, and lists the breaks below. Source: https://docs.godotengine.org/en/stable/tutorials/migrating/upgrading_to_godot_4.7.html (fetched 2026-10-11). 4.7's release date is 18 June 2026: https://godotengine.org/download/archive/4.7-stable/
+
+### Behavior changes
+
+| Subsystem | Change | Details |
+|-----------|--------|---------|
+| Rendering | `LinearToSRGB` visual shader no longer clamps to `[0.0, 1.0]` | Mobile and Forward+ only (GH-113956). Compatibility is not named. |
+| Rendering | `CanvasItem` line drawing skips the antialiasing feather | Lines look thinner. Projects that relied on the feather need a larger width (GH-105122). |
+| Audio | `AudioStreamPlayer.area_mask` default changed from `1` to `0` | `Area2D` / `Area3D` `audio_bus_override` that used the default layer-1 mask must set the mask back to layer 1 (GH-107679). |
+| Physics | Jolt `WorldBoundaryShape3D.plane.d` sign is reversed versus 4.6 | 3D Jolt only (GH-118948). This project uses Godot Physics 2D. |
+| Physics | Jolt `SoftBody3D` default mass is 1 kg for the whole body | Was 0, which calculated 1 kg per point (GH-116041). 3D Jolt. |
+| Physics | Jolt `SoftBody3D.linear_stiffness` matches Godot Physics more closely | Retune `linear_stiffness` and `damping_coefficient` (GH-116041). 3D Jolt. |
+| Physics | Jolt `Area3D` reports overlaps with `SoftBody3D` | Filter them with collision layers and masks (GH-114198). 3D Jolt. |
+| Input | Mouse and keyboard device IDs are no longer `0` | Use `InputEvent.DEVICE_ID_MOUSE` and `InputEvent.DEVICE_ID_KEYBOARD`. A joypad may use `0` (GH-116274). |
+| GDScript | Writing one element of a packed array does not call the setter for the whole property | GH-113228 |
+| GDScript | An override inherits the parent method's typed return | The override needs an explicit return. `return null` satisfies the error (GH-115763). |
+
+### Signature changes that are not source-compatible
+
+Optional parameters marked GDScript-compatible on the same page are not repeated here. The page is the full list.
+
+| API | Change | Compatibility |
+|-----|--------|----------------|
+| `OptimizedTranslation.generate` | Return type `void` to `bool` | GDScript compatible. C# binary incompatible, source compatible. GH-119563 |
+| `Control.accessibility_live` | Type moves from `DisplayServer.AccessibilityLiveMode` to `AccessibilityServer.AccessibilityLiveMode` | GDScript compatible. C# binary and source incompatible. GH-116839 |
+| `RichTextLabel.ImageUpdateMask.UPDATE_WIDTH_IN_PERCENT` | Renamed to `UPDATE_WIDTH_UNIT` | GDScript incompatible. C# source incompatible. GH-112617 |
+| `RichTextLabel.add_image` / `update_image` | `width` and `height` change from `int` to `float`. `width_in_percent` / `height_in_percent` rename to `width_unit` / `height_unit` and change from `bool` to `RichTextLabel.ImageUnit` | Width and height are GDScript compatible. The renamed unit parameters are C# source incompatible. GH-112617 |
+| `RenderingServer.particles_request_process_time` | `time` renamed to `process_time`, plus optional `process_time_residual` | C# source incompatible. GH-109142 |
+| `Animation.length` | Metadata `float` to `double` | GDScript compatible. C# binary and source incompatible. GH-116394 |
+| `PhysicsServer2DExtension._body_set_shape_as_one_way_collision` | New `direction` parameter | GDScript, C# binary, and C# source incompatible. GH-104736 |
+| `AudioEffectSpectrumAnalyzer.tap_back_pos` | Removed | GDScript, C# binary, and C# source incompatible. GH-114355. No replacement is stated. |
+| `OpenXRExtensionWrapper._on_register_metadata` | New `interaction_profile_metadata` parameter | GDScript, C# binary, and C# source incompatible. GH-117399 |
+| `EditorVCSInterface._commit` | New `amend` parameter | GDScript, C# binary, and C# source incompatible. GH-117968 |
+| `EditorSceneFormatImporter.IMPORT_*` | Constants moved onto the `ImportFlags` enum | GDScript compatible. C# source incompatible. GH-115788 |
+| `ImageTexture.get_format` / `PortableCompressedTexture2D.get_format` | Moved to `Texture2D` | GDScript and C# compatible. GH-109004 |
+
+### Changed defaults
+
+| Property | Old | New |
+|----------|-----|-----|
+| New project `display/window/stretch/mode` | `disabled` | `canvas_items` |
+| New project `display/window/stretch/aspect` | `keep` | `expand` |
+| `LookAtModifier3D.relative` | `true` | `false` |
+| `rendering/reflections/sky_reflections/roughness_layers` | `7` | `8` |
+| `ResourceImporterDynamicFont.hinting` | `1` | `3` |
+| `RichTextLabel.add_image` / `update_image` percent parameters | `false` | `0` |
 
 ## 4.6 → 4.6.3 (16 Feb 2026 – 20 May 2026 — POST-CUTOFF, HIGH RISK)
 

@@ -1,6 +1,6 @@
 # Godot — Current Best Practices
 
-Last verified: 2026-10-11 for the 4.6.1–4.6.3 section. Sections through 4.6 were last verified 2026-02-12 and were not re-fetched this run. | Engine: Godot 4.6.3
+Last verified: 2026-10-11 for the 4.6.1–4.7.2 sections. Sections through 4.6 were last verified 2026-02-12 and were not re-fetched this run. | Engine: Godot 4.7.2
 
 Practices that are **new or changed** since the model's training data (~4.3).
 This supplements (not replaces) the agent's built-in knowledge.
@@ -177,3 +177,28 @@ Fetched 2026-10-11 from the three maintenance articles linked in `VERSION.md`. T
 - Android: 4.6.3 fixes back navigation when targeting API level 36 (GH-117653). The 2026 Android versions bump is GH-113761. The target SDK integer is **NOT SOURCEABLE** — the article does not state it.
 - macOS editor only: 4.6.1 binaries downloaded before 2026-02-16 22:30 UTC were missing entitlements and broke .NET and GDExtension until re-downloaded. That is an editor binary, not a project API.
 - 3D Jolt fixes in these patches (discarded transforms, `MoveKinematic`, gravity, inside-out triangles, area overlaps) do not change Godot Physics 2D. This project stays on Godot Physics 2D.
+
+## 4.7 (18 June 2026)
+
+Fetched 2026-10-11 from https://godotengine.org/releases/4.7/ and https://docs.godotengine.org/en/stable/tutorials/migrating/upgrading_to_godot_4.7.html. Read the migration page before reusing a 4.6 call.
+
+- New projects default `display/window/stretch/mode` to `canvas_items` and `display/window/stretch/aspect` to `expand`.
+- `Control` has `offset_transform_*` properties so a container does not wipe a child's translate, rotate, or scale. The release post says the offset is visual by default, so a transformed button keeps its hover target.
+- `CollisionShape2D.one_way_collision_direction` sets a one-way collision direction other than local up.
+- Compare mouse and keyboard events with `InputEvent.DEVICE_ID_MOUSE` and `InputEvent.DEVICE_ID_KEYBOARD`. Device `0` can be a joypad.
+- An override of a method with a typed return needs its own return statement.
+- Assigning one element of a packed array does not run the setter of the whole array property.
+- `AudioStreamPlayer.area_mask` now defaults to `0`. Restore layer 1 when an area bus override depended on the old default.
+- `DrawableTexture2D` draws onto a texture. `GradientTexture2D` has `FILL_CONIC`.
+- `PopupMenu` can show a search bar. The release post says the older incremental search was not usable on a touchscreen.
+- HDR output is listed for Windows, macOS, iOS, visionOS, and Linux (Wayland). Web and Android are not in that list. Whether the Compatibility renderer supports HDR output is **NOT SOURCEABLE** from that post.
+- `CanvasItem` lines no longer include the antialiasing feather, so a line that looked thick enough in 4.6 can look thin in 4.7.
+- `AreaLight3D` is a 3D rectangular light. This project renders in 2D.
+
+## Maintenance patches (4.7.1 – 4.7.2)
+
+Fetched 2026-10-11 from the 4.7.1 and 4.7.2 maintenance articles linked in `VERSION.md`.
+
+- Each post says there are no known incompatibilities with the previous patch. Back up the project, or keep it in version control, before opening it in a newer editor.
+- 4.7.1: a popup menu does not open the virtual keyboard by itself (GH-120768). Scene-tree drag-and-drop on a touchscreen is fixed (GH-120456). Android soft-keyboard backspace can delete text that was already in the field (GH-119798).
+- 4.7.2: `BaseButton` input is fixed when `enable_long_press_as_right_click` is true (GH-120962). The installed editor's version hash is `ed1daf0bf`, the commit named in that article.
