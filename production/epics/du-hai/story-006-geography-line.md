@@ -1,12 +1,12 @@
 # Story 006: 登陆时一句地理原因
 
 > **Epic**: 读海
-> **Status**: Ready
+> **Status**: Complete
+> **Last Updated**: 2026-10-11
 > **Layer**: Presentation
 > **Type**: UI
 > **Estimate**: L
 > **Manifest Version**: N/A (minimal — no control manifest)
-> **Last Updated**: —
 
 ## Context
 
@@ -83,3 +83,12 @@
 
 - Depends on: Story 005 must be DONE
 - Unlocks: Story 007
+
+---
+
+## Completion Notes
+**Completed**: 2026-10-11
+**Criteria**: 7/7 passing
+**Deviations**: None
+**Test Evidence**: Retained frame `production/qa/evidence/geography-line/01-geography-line.png` shows the one sentence. It is absent on the miss and supply frames.
+**Code Review**: Skipped (solo)

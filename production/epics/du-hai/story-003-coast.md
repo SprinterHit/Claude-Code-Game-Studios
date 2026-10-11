@@ -1,12 +1,12 @@
 # Story 003: 海岸可抵达也可错过
 
 > **Epic**: 读海
-> **Status**: Ready
+> **Status**: Complete
+> **Last Updated**: 2026-10-11
 > **Layer**: Core
 > **Type**: Logic
 > **Estimate**: L
 > **Manifest Version**: N/A (minimal — no control manifest)
-> **Last Updated**: —
 
 ## Context
 
@@ -85,3 +85,12 @@
 
 - Depends on: Story 002 must be DONE
 - Unlocks: Story 004
+
+---
+
+## Completion Notes
+**Completed**: 2026-10-11
+**Criteria**: 7/7 passing
+**Deviations**: None
+**Test Evidence**: Waived at `qa.level: minimal`. The same run landed on the one shore and, separately, passed it. Retained frame: `production/qa/evidence/coast/01-ink-coast.png`.
+**Code Review**: Skipped (solo)

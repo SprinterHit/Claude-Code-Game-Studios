@@ -1,12 +1,12 @@
 # Story 002: 风和海流推动船
 
 > **Epic**: 读海
-> **Status**: Ready
+> **Status**: Complete
+> **Last Updated**: 2026-10-11
 > **Layer**: Core
 > **Type**: Logic
 > **Estimate**: L
 > **Manifest Version**: N/A (minimal — no control manifest)
-> **Last Updated**: —
 
 ## Context
 
@@ -84,3 +84,12 @@
 
 - Depends on: Story 001 must be DONE
 - Unlocks: Story 003
+
+---
+
+## Completion Notes
+**Completed**: 2026-10-11
+**Criteria**: 7/7 passing
+**Deviations**: None
+**Test Evidence**: Waived at `qa.level: minimal`. Headless run printed `VOYAGE_PASS`. Retained frame: `production/qa/evidence/wind-and-current/01-wind-and-current.png`.
+**Code Review**: Skipped (solo)

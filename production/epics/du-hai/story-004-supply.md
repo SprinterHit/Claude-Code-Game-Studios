@@ -1,12 +1,12 @@
 # Story 004: 补给耗尽结束这一趟
 
 > **Epic**: 读海
-> **Status**: Ready
+> **Status**: Complete
+> **Last Updated**: 2026-10-11
 > **Layer**: Core
 > **Type**: Logic
 > **Estimate**: L
 > **Manifest Version**: N/A (minimal — no control manifest)
-> **Last Updated**: —
 
 ## Context
 
@@ -85,3 +85,12 @@
 
 - Depends on: Story 003 must be DONE
 - Unlocks: Story 005
+
+---
+
+## Completion Notes
+**Completed**: 2026-10-11
+**Criteria**: 7/7 passing
+**Deviations**: None
+**Test Evidence**: Waived at `qa.level: minimal`. Empty stores with the shore off screen ended the voyage. Landing before that did not. Retained frame: `production/qa/evidence/supply/01-supply-failed.png`.
+**Code Review**: Skipped (solo)

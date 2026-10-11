@@ -1,12 +1,12 @@
 # Story 005: 登陆揭示历史海岸
 
 > **Epic**: 读海
-> **Status**: Ready
+> **Status**: Complete
+> **Last Updated**: 2026-10-11
 > **Layer**: Feature
 > **Type**: Visual/Feel
 > **Estimate**: L
 > **Manifest Version**: N/A (minimal — no control manifest)
-> **Last Updated**: —
 
 ## Context
 
@@ -84,3 +84,12 @@
 
 - Depends on: Story 004 must be DONE
 - Unlocks: Story 006
+
+---
+
+## Completion Notes
+**Completed**: 2026-10-11
+**Criteria**: 7/7 passing. The still shows the revealed shore. The timing of the fill itself was not separately played.
+**Deviations**: None
+**Test Evidence**: `production/qa/evidence/reveal-coast/01-revealed-coast.png` and sign-off in `production/qa/evidence/reveal-coast-evidence.md`.
+**Code Review**: Skipped (solo)

@@ -1,12 +1,12 @@
 # Story 007: 从出发到结束的完整一局
 
 > **Epic**: 读海
-> **Status**: Ready
+> **Status**: Complete
+> **Last Updated**: 2026-10-11
 > **Layer**: Feature
 > **Type**: Integration
 > **Estimate**: L
 > **Manifest Version**: N/A (minimal — no control manifest)
-> **Last Updated**: —
 
 ## Context
 
@@ -82,3 +82,12 @@
 
 - Depends on: Story 006 must be DONE
 - Unlocks: None
+
+---
+
+## Completion Notes
+**Completed**: 2026-10-11
+**Criteria**: 8/8 passing
+**Deviations**: None. The voyage does not load another shore after it ends.
+**Test Evidence**: Waived at `qa.level: minimal`. Headless run covered sailing, landing, missing the shore, and empty stores. Frames: `production/qa/evidence/complete-voyage/`.
+**Code Review**: Skipped (solo)
