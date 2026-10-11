@@ -4,9 +4,15 @@ config_version=5
 
 config/name="Claude-Code-Game-Studios"
 config/features=PackedStringArray("4.7", "GL Compatibility")
+run/main_scene="res://src/voyage/voyage.tscn"
 
 [rendering]
 
 renderer/rendering_method="gl_compatibility"
+environment/defaults/default_clear_color=Color(0.82, 0.86, 0.84, 1)
 
-; run/main_scene is unset. /dev-story or the developer sets it once a scene exists.
+; Main scene is the one-ship voyage from story 001.
+
+[input_devices]
+
+pointing/emulate_touch_from_mouse=true

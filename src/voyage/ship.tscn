@@ -1,0 +1,20 @@
+[gd_scene load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://src/voyage/ship.gd" id="1_ship"]
+
+[node name="Ship" type="Node2D"]
+script = ExtResource("1_ship")
+sail_speed = 120.0
+initial_heading = Vector2(1, 0)
+
+[node name="Hull" type="Polygon2D" parent="."]
+color = Color(0.15, 0.13, 0.11, 1)
+polygon = PackedVector2Array(22, 0, -12, 9, -6, 2, -14, 0, -6, -2, -12, -9)
+
+[node name="Sail" type="Polygon2D" parent="."]
+position = Vector2(-4, 0)
+color = Color(0.95, 0.92, 0.84, 1)
+polygon = PackedVector2Array(0, -2, 0, -18, 9, -2)
+
+[node name="Camera2D" type="Camera2D" parent="."]
+ignore_rotation = true

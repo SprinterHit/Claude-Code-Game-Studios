@@ -1,12 +1,12 @@
 # Story 001: 触摸改变航向
 
 > **Epic**: 读海
-> **Status**: Ready
+> **Status**: In Progress
+> **Last Updated**: 2026-10-11
 > **Layer**: Foundation
 > **Type**: Logic
 > **Estimate**: L
 > **Manifest Version**: N/A (minimal — no control manifest)
-> **Last Updated**: —
 
 ## Context
 
