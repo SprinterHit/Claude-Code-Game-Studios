@@ -10,6 +10,8 @@ const SUPPLY_FAILED := "supply_failed"
 
 const TRACK_STEP := 0.22
 const TRACK_SAMPLES := 14
+const CHART_FRAME := Rect2(-2400, -1700, 4800, 3400)
+const CHART_REVEAL := 64.0
 
 var outcome: String = SAILING
 
@@ -66,6 +68,7 @@ func advance(delta: float) -> void:
 	_ship.wind_push = _wind.vector_at(_ship.global_position)
 	_ship.current_push = _current.vector_at(_ship.global_position)
 	_ship.integrate(delta)
+	_keep_ship_on_the_chart()
 	_supply.tick(delta)
 	_draw_track()
 	var view := _view_rect()
@@ -245,6 +248,19 @@ func _on_heading_changed() -> void:
 		_audio.play_aim()
 
 
+## Stops the ship where the camera would leave the chart, and slides it along that edge.
+func _keep_ship_on_the_chart() -> void:
+	var half := _view_rect().size * 0.5
+	var shift := _camera.offset
+	var reveal := Vector2(CHART_REVEAL, CHART_REVEAL)
+	var min_pos := CHART_FRAME.position - reveal + half - shift
+	var max_pos := CHART_FRAME.end + reveal - half - shift
+	var pos := _ship.global_position
+	pos.x = clampf(pos.x, min_pos.x, max_pos.x)
+	pos.y = clampf(pos.y, min_pos.y, max_pos.y)
+	_ship.global_position = pos
+
+
 func _view_rect() -> Rect2:
 	var center := _camera.global_position + _camera.offset
 	var viewport_size := Vector2(
@@ -256,10 +272,13 @@ func _view_rect() -> Rect2:
 
 
 func _build_chart() -> void:
+	var sea_rect := CHART_FRAME.grow(180.0)
 	var sea := Polygon2D.new()
 	sea.polygon = PackedVector2Array([
-		Vector2(-1800, -1200), Vector2(1800, -1200),
-		Vector2(1800, 1200), Vector2(-1800, 1200),
+		sea_rect.position,
+		Vector2(sea_rect.end.x, sea_rect.position.y),
+		sea_rect.end,
+		Vector2(sea_rect.position.x, sea_rect.end.y),
 	])
 	sea.uv = PackedVector2Array([
 		Vector2(-1.6, -1.2), Vector2(2.4, -1.2), Vector2(2.4, 1.6), Vector2(-1.6, 1.6),
@@ -269,6 +288,7 @@ func _build_chart() -> void:
 	sea.material = material
 	sea.z_index = -10
 	add_child(sea)
+	_add_chart_frame()
 	_add_departure_mark()
 
 	_current = CurrentBand.new()
@@ -372,6 +392,39 @@ func _build_chart() -> void:
 	_screen.add_child(_again)
 	_add_compass(_screen)
 	_draw_track()
+
+
+func _add_chart_frame() -> void:
+	var outer := PackedVector2Array([
+		CHART_FRAME.position,
+		Vector2(CHART_FRAME.end.x, CHART_FRAME.position.y),
+		CHART_FRAME.end,
+		Vector2(CHART_FRAME.position.x, CHART_FRAME.end.y),
+	])
+	var ink := Line2D.new()
+	ink.width = 10.0
+	ink.default_color = ChartStyle.INK
+	ink.closed = true
+	ink.joint_mode = Line2D.LINE_JOINT_ROUND
+	ink.z_index = 0
+	for point: Vector2 in outer:
+		ink.add_point(point)
+	add_child(ink)
+	var inner_rect := CHART_FRAME.grow(-18.0)
+	var paper := Line2D.new()
+	paper.width = 3.0
+	paper.default_color = ChartStyle.PAPER
+	paper.closed = true
+	paper.z_index = 0
+	var inner := PackedVector2Array([
+		inner_rect.position,
+		Vector2(inner_rect.end.x, inner_rect.position.y),
+		inner_rect.end,
+		Vector2(inner_rect.position.x, inner_rect.end.y),
+	])
+	for point: Vector2 in inner:
+		paper.add_point(point)
+	add_child(paper)
 
 
 func _add_departure_mark() -> void:
