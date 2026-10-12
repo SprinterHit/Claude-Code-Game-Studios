@@ -78,7 +78,10 @@ func advance(delta: float) -> void:
 	var coast_state := _coast.evaluate(_ship.global_position)
 	if coast_state == Coast.LANDED:
 		_finish_landed()
-	elif coast_state == Coast.PASSED and coast_visible:
+	elif coast_state == Coast.PASSED:
+		# West of the shore ends the voyage even after the ink has left the
+		# view. Otherwise a heading that follows the current sails on with no
+		# landing, no miss, and no way to start again.
 		_finish_missed()
 	elif _supply.is_empty() and not _land_seen:
 		_finish_supply()
@@ -156,6 +159,7 @@ func _finish_landed() -> void:
 	_geography.show_reason()
 	_set_outcome_shown(false)
 	_set_track_shown(false)
+	_hide_hint()
 	_show_again()
 	_audio.play_landing()
 
@@ -207,6 +211,7 @@ func _show_outcome(line: String) -> void:
 	_outcome_line.text = line
 	_set_outcome_shown(true)
 	_set_track_shown(false)
+	_hide_hint()
 	_show_again()
 
 
