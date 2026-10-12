@@ -13,7 +13,7 @@ extends Node2D
 var shifted: bool = false
 
 var _opening_push: Vector2 = Vector2(-64, -28)
-var _arrows: Array[Polygon2D] = []
+var _arrows: Array[Node2D] = []
 
 
 func _ready() -> void:
@@ -56,34 +56,27 @@ func _process(delta: float) -> void:
 	if push.length_squared() > 0.001:
 		step = push.normalized() * 36.0 * delta
 	var bounds := Rect2(field_origin, field_size)
-	for arrow: Polygon2D in _arrows:
+	for arrow: Node2D in _arrows:
 		arrow.position += step
 		arrow.position = _wrap(arrow.position, bounds)
 
 
 func _build_arrows() -> void:
-	var shape := PackedVector2Array([
-		Vector2(22, 0), Vector2(6, 6.5), Vector2(8, 2.2),
-		Vector2(-18, 2.2), Vector2(-18, -2.2), Vector2(8, -2.2), Vector2(6, -6.5),
-	])
 	var columns := int(field_size.x / spacing) + 1
 	var rows := int(field_size.y / spacing) + 1
 	for row: int in rows:
 		for column: int in columns:
-			var arrow := Polygon2D.new()
-			arrow.polygon = shape
-			arrow.color = ChartStyle.WIND
+			var arrow := WindArrow.new()
 			arrow.position = field_origin + Vector2(column * spacing, row * spacing)
 			arrow.position += Vector2(0.0 if row % 2 == 0 else spacing * 0.5, 0.0)
 			arrow.rotation = push.angle()
-			arrow.z_index = 2
 			add_child(arrow)
 			_arrows.append(arrow)
 
 
 func _aim_arrows() -> void:
 	var angle := push.angle()
-	for arrow: Polygon2D in _arrows:
+	for arrow: Node2D in _arrows:
 		arrow.rotation = angle
 
 

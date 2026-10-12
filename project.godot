@@ -16,7 +16,7 @@ window/stretch/aspect="expand"
 [rendering]
 
 renderer/rendering_method="gl_compatibility"
-environment/defaults/default_clear_color=Color(0.075, 0.176, 0.188, 1)
+environment/defaults/default_clear_color=Color(0.09, 0.34, 0.46, 1)
 
 ; Main scene is the one-ship voyage from story 001.
 

@@ -13,13 +13,14 @@ func _ready() -> void:
 	style.bg_color = ChartStyle.PAPER
 	style.border_color = ChartStyle.INK
 	style.set_border_width_all(2)
-	style.set_corner_radius_all(3)
+	style.set_corner_radius_all(18)
 	style.content_margin_left = 28.0
 	style.content_margin_right = 28.0
 	style.content_margin_top = 16.0
 	style.content_margin_bottom = 16.0
-	style.shadow_color = Color(0.08, 0.07, 0.05, 0.28)
-	style.shadow_size = 8
+	style.shadow_color = Color(0.08, 0.16, 0.18, 0.32)
+	style.shadow_size = 12
+	style.shadow_offset = Vector2(0, 4)
 	add_theme_stylebox_override("panel", style)
 	_label = Label.new()
 	_label.text = ChartStyle.GEOGRAPHY_REASON

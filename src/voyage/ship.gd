@@ -43,7 +43,7 @@ func _ready() -> void:
 	z_index = 6
 	_wake = Line2D.new()
 	_wake.top_level = true
-	_wake.width = 5.0
+	_wake.width = 10.0
 	_wake.joint_mode = Line2D.LINE_JOINT_ROUND
 	_wake.begin_cap_mode = Line2D.LINE_CAP_ROUND
 	_wake.end_cap_mode = Line2D.LINE_CAP_ROUND
@@ -127,7 +127,7 @@ func _viewport_to_world(viewport_position: Vector2) -> Vector2:
 
 
 func _lay_wake() -> void:
-	_wake.add_point(global_position)
+	_wake.add_point(global_position - heading * 34.0 * scale.x)
 	if _wake.get_point_count() > 36:
 		_wake.remove_point(0)
 

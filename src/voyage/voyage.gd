@@ -20,9 +20,12 @@ var _coast: Coast
 var _supply: SupplyStore
 var _geography: GeographyLine
 var _outcome_line: Label
+var _outcome_card: Panel
 var _again: Button
 var _hint: Label
+var _hint_card: Panel
 var _track: Line2D
+var _track_glow: Line2D
 var _camera: Camera2D
 var _audio: SeaAudio
 var _screen: Control
@@ -41,8 +44,8 @@ func _ready() -> void:
 	_build_chart()
 	_apply_launch_pose()
 	if outcome != SAILING:
-		_hint.visible = false
-		_track.visible = false
+		_set_hint_shown(false)
+		_set_track_shown(false)
 
 
 func _process(delta: float) -> void:
@@ -85,7 +88,7 @@ func restart() -> void:
 	_coast.conceal()
 	_supply.refill()
 	_geography.visible = false
-	_outcome_line.visible = false
+	_set_outcome_shown(false)
 	_hide_again()
 	_ship.resume_sailing()
 	_ship.global_position = _departure
@@ -95,9 +98,9 @@ func restart() -> void:
 	_ship.clear_wake()
 	_hint_used = false
 	_hint_time = 0.0
-	_hint.visible = true
 	_hint.modulate = Color(1, 1, 1, 1)
-	_track.visible = true
+	_set_hint_shown(true)
+	_set_track_shown(true)
 
 
 func wind_field() -> WindField:
@@ -148,8 +151,8 @@ func _finish_landed() -> void:
 	_ship.stop_sailing()
 	_coast.reveal()
 	_geography.show_reason()
-	_outcome_line.visible = false
-	_track.visible = false
+	_set_outcome_shown(false)
+	_set_track_shown(false)
 	_show_again()
 	_audio.play_landing()
 
@@ -199,9 +202,27 @@ func _hull_clears_the_shore() -> bool:
 func _show_outcome(line: String) -> void:
 	_geography.visible = false
 	_outcome_line.text = line
-	_outcome_line.visible = true
-	_track.visible = false
+	_set_outcome_shown(true)
+	_set_track_shown(false)
 	_show_again()
+
+
+func _set_outcome_shown(shown: bool) -> void:
+	_outcome_line.visible = shown
+	if _outcome_card != null:
+		_outcome_card.visible = shown
+
+
+func _set_hint_shown(shown: bool) -> void:
+	_hint.visible = shown
+	if _hint_card != null:
+		_hint_card.visible = shown
+
+
+func _set_track_shown(shown: bool) -> void:
+	_track.visible = shown
+	if _track_glow != null:
+		_track_glow.visible = shown
 
 
 func _show_again() -> void:
@@ -257,17 +278,10 @@ func _build_chart() -> void:
 	_coast = Coast.new()
 	add_child(_coast)
 	_add_chart_note(ChartStyle.WIND_NOTE, Vector2(860, -90), ChartStyle.WIND)
-	_add_chart_note(ChartStyle.CURRENT_NOTE, Vector2(560, 150), ChartStyle.CURRENT_STREAK)
+	_add_chart_note(ChartStyle.CURRENT_NOTE, Vector2(560, 150), ChartStyle.CURRENT_LABEL)
 
-	_track = Line2D.new()
-	_track.top_level = true
-	_track.width = 2.4
-	_track.default_color = ChartStyle.TRACK
-	_track.joint_mode = Line2D.LINE_JOINT_ROUND
-	_track.begin_cap_mode = Line2D.LINE_CAP_ROUND
-	_track.end_cap_mode = Line2D.LINE_CAP_ROUND
-	_track.z_index = 5
-	add_child(_track)
+	_track_glow = _make_track_line(8.0, Color(1, 0.98, 0.92, 0.38), 4)
+	_track = _make_track_line(3.2, ChartStyle.TRACK, 5)
 
 	_audio = SeaAudio.new()
 	add_child(_audio)
@@ -284,16 +298,33 @@ func _build_chart() -> void:
 	_supply.position = Vector2(28, 24)
 	_screen.add_child(_supply)
 
+	_hint_card = Panel.new()
+	_hint_card.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	_hint_card.size = Vector2(236, 46)
+	_hint_card.add_theme_stylebox_override("panel", _paper_chip(16))
+	_screen.add_child(_hint_card)
 	_hint = Label.new()
 	_hint.text = ChartStyle.HINT_LINE
+	_hint.position = Vector2(22, 11)
 	_hint.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	_hint.add_theme_font_override("font", ChartStyle.FONT)
 	_hint.add_theme_font_size_override("font_size", 20)
-	_hint.add_theme_color_override("font_color", ChartStyle.PAPER)
-	_screen.add_child(_hint)
+	_hint.add_theme_color_override("font_color", ChartStyle.INK)
+	_hint_card.add_child(_hint)
 
 	_geography = GeographyLine.new()
 	_screen.add_child(_geography)
+
+	_outcome_card = Panel.new()
+	_outcome_card.visible = false
+	_outcome_card.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	_outcome_card.set_anchors_preset(Control.PRESET_CENTER_BOTTOM)
+	_outcome_card.offset_left = -390.0
+	_outcome_card.offset_right = 390.0
+	_outcome_card.offset_top = -118.0
+	_outcome_card.offset_bottom = -46.0
+	_outcome_card.add_theme_stylebox_override("panel", _paper_chip(16))
+	_screen.add_child(_outcome_card)
 
 	_outcome_line = Label.new()
 	_outcome_line.visible = false
@@ -323,9 +354,12 @@ func _build_chart() -> void:
 	plate.bg_color = ChartStyle.PAPER
 	plate.border_color = ChartStyle.INK
 	plate.set_border_width_all(2)
-	plate.set_corner_radius_all(3)
-	plate.content_margin_left = 16.0
-	plate.content_margin_right = 16.0
+	plate.set_corner_radius_all(16)
+	plate.content_margin_left = 18.0
+	plate.content_margin_right = 18.0
+	plate.shadow_color = Color(0.06, 0.16, 0.18, 0.3)
+	plate.shadow_size = 8
+	plate.shadow_offset = Vector2(0, 3)
 	_again.add_theme_stylebox_override("normal", plate)
 	_again.add_theme_stylebox_override("hover", plate)
 	_again.add_theme_stylebox_override("pressed", plate)
@@ -341,30 +375,73 @@ func _build_chart() -> void:
 
 
 func _add_departure_mark() -> void:
-	var mark := Line2D.new()
-	mark.width = 1.6
-	mark.default_color = Color(ChartStyle.PAPER, 0.85)
-	mark.add_point(_departure + Vector2(-16, 0))
-	mark.add_point(_departure + Vector2(16, 0))
-	add_child(mark)
-	var stem := Line2D.new()
-	stem.width = 1.6
-	stem.default_color = Color(ChartStyle.PAPER, 0.85)
-	stem.add_point(_departure + Vector2(0, -16))
-	stem.add_point(_departure + Vector2(0, 16))
-	add_child(stem)
+	_add_disc(_departure, 16.0, ChartStyle.VERMILION, 2)
+	_add_disc(_departure, 9.0, ChartStyle.PAPER, 2)
+	var flag := Polygon2D.new()
+	flag.polygon = PackedVector2Array([
+		_departure + Vector2(0, -2),
+		_departure + Vector2(14, -8),
+		_departure + Vector2(0, -14),
+	])
+	flag.color = ChartStyle.VERMILION
+	flag.z_index = 2
+	add_child(flag)
+
+
+func _add_disc(at: Vector2, radius: float, color: Color, z: int) -> void:
+	var disc := Polygon2D.new()
+	var points := PackedVector2Array()
+	for index: int in 18:
+		var angle := TAU * float(index) / 18.0
+		points.append(at + Vector2(cos(angle), sin(angle)) * radius)
+	disc.polygon = points
+	disc.color = color
+	disc.z_index = z
+	add_child(disc)
 
 
 func _add_chart_note(text: String, at: Vector2, color: Color) -> void:
+	var chip := Panel.new()
+	chip.position = at + Vector2(-10, -6)
+	chip.size = Vector2(44, 36)
+	chip.z_index = 4
+	chip.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	chip.add_theme_stylebox_override("panel", _paper_chip(12))
+	add_child(chip)
 	var note := Label.new()
 	note.text = text
 	note.position = at
-	note.z_index = 4
+	note.z_index = 5
 	note.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	note.add_theme_font_override("font", ChartStyle.FONT)
 	note.add_theme_font_size_override("font_size", 22)
 	note.add_theme_color_override("font_color", color)
 	add_child(note)
+
+
+func _paper_chip(radius: int) -> StyleBoxFlat:
+	var plate := StyleBoxFlat.new()
+	plate.bg_color = ChartStyle.PAPER
+	plate.border_color = ChartStyle.INK
+	plate.set_border_width_all(2)
+	plate.set_corner_radius_all(radius)
+	plate.shadow_color = Color(0.06, 0.16, 0.18, 0.28)
+	plate.shadow_size = 5
+	plate.shadow_offset = Vector2(0, 2)
+	return plate
+
+
+func _make_track_line(width: float, color: Color, z: int) -> Line2D:
+	var line := Line2D.new()
+	line.top_level = true
+	line.width = width
+	line.default_color = color
+	line.joint_mode = Line2D.LINE_JOINT_ROUND
+	line.begin_cap_mode = Line2D.LINE_CAP_ROUND
+	line.end_cap_mode = Line2D.LINE_CAP_ROUND
+	line.z_index = z
+	add_child(line)
+	return line
 
 
 func _add_compass(screen: Control) -> void:
@@ -382,18 +459,18 @@ func _place_hint(delta: float) -> void:
 			_hide_hint()
 			return
 	var screen_point: Vector2 = get_viewport().get_canvas_transform() * _ship.global_position
-	_hint.position = screen_point + Vector2(-118, -82)
+	_hint_card.position = screen_point + Vector2(-118, -96)
 
 
 func _hide_hint() -> void:
-	_hint.visible = false
+	_set_hint_shown(false)
 
 
 func _draw_track() -> void:
 	if outcome != SAILING:
-		_track.visible = false
+		_set_track_shown(false)
 		return
-	_track.visible = true
+	_set_track_shown(true)
 	var points := PackedVector2Array()
 	var pos := _ship.global_position
 	points.append(pos)
@@ -403,6 +480,7 @@ func _draw_track() -> void:
 		pos += (_ship.heading * _ship.sail_speed + wind_push + current_push) * TRACK_STEP
 		points.append(pos)
 	_track.points = points
+	_track_glow.points = points
 
 
 func _apply_launch_pose() -> void:

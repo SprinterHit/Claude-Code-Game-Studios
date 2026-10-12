@@ -20,25 +20,33 @@ var _streak_t: Array[float] = []
 
 func _ready() -> void:
 	z_index = 1
+	var glow := Polygon2D.new()
+	glow.polygon = _ribbon(_centerline, half_width * 1.18)
+	glow.color = Color(0.35, 0.82, 0.88, 0.28)
+	glow.z_index = 1
+	add_child(glow)
 	_band = Polygon2D.new()
 	_band.polygon = _ribbon(_centerline, half_width)
 	_band.color = ChartStyle.CURRENT
 	_band.z_index = 1
 	add_child(_band)
-	var edge := Polygon2D.new()
-	edge.polygon = _ribbon(_centerline, half_width * 0.22)
-	edge.color = ChartStyle.CURRENT_STREAK
-	edge.color.a = 0.35
-	edge.z_index = 1
-	add_child(edge)
-	for index: int in 6:
+	var shine := Polygon2D.new()
+	shine.polygon = _ribbon(_centerline, half_width * 0.28)
+	var shine_color := ChartStyle.CURRENT_STREAK
+	shine_color.a = 0.55
+	shine.color = shine_color
+	shine.z_index = 1
+	add_child(shine)
+	_add_edge(1.0, Color(0.95, 0.99, 0.98, 0.7), 3.4)
+	_add_edge(-1.0, Color(0.95, 0.99, 0.98, 0.45), 2.4)
+	for index: int in 8:
 		var streak := Polygon2D.new()
-		streak.polygon = _capsule(16.0, 5.0)
+		streak.polygon = _capsule(18.0, 5.5)
 		streak.color = ChartStyle.CURRENT_STREAK
 		streak.z_index = 1
 		add_child(streak)
 		_streaks.append(streak)
-		_streak_t.append(float(index) / 6.0)
+		_streak_t.append(float(index) / 8.0)
 
 
 func band_point_count() -> int:
@@ -65,6 +73,20 @@ func _process(delta: float) -> void:
 		var sample := _sample(_centerline, _streak_t[index])
 		_streaks[index].position = sample.point
 		_streaks[index].rotation = sample.tangent.angle()
+
+
+func _add_edge(side: float, color: Color, width: float) -> void:
+	var line := Line2D.new()
+	line.width = width
+	line.default_color = color
+	line.joint_mode = Line2D.LINE_JOINT_ROUND
+	line.begin_cap_mode = Line2D.LINE_CAP_ROUND
+	line.end_cap_mode = Line2D.LINE_CAP_ROUND
+	line.z_index = 1
+	for index: int in _centerline.size():
+		var normal := _normal(_centerline, index)
+		line.add_point(_centerline[index] + normal * half_width * side)
+	add_child(line)
 
 
 func _ribbon(centerline: PackedVector2Array, width: float) -> PackedVector2Array:
