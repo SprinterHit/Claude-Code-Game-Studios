@@ -11,7 +11,7 @@ signal heading_changed
 
 
 ## Pixels traveled per second along [member heading]. Tuned on the ship scene.
-@export var sail_speed: float = 110.0
+@export var sail_speed: float = 56.0
 
 ## Direction used from the start of the voyage until the first aim.
 ## Tuned on the ship scene. A zero vector sails west, toward the one coast.

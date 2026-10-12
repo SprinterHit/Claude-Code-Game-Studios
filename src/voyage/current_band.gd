@@ -3,16 +3,16 @@ extends Node2D
 ## One colored ribbon of current. It pushes the ship only while the ship is on it.
 
 
-@export var push: Vector2 = Vector2(-52, 42)
-@export var half_width: float = 58.0
+@export var push: Vector2 = Vector2(-18, 10)
+@export var half_width: float = 72.0
 
 var _band: Polygon2D
 var _centerline: PackedVector2Array = PackedVector2Array([
-	Vector2(760, 248),
-	Vector2(420, 196),
-	Vector2(80, 214),
-	Vector2(-260, 246),
-	Vector2(-620, 292),
+	Vector2(880, 120),
+	Vector2(620, 90),
+	Vector2(340, 70),
+	Vector2(40, 60),
+	Vector2(-220, 80),
 ])
 var _streaks: Array[Polygon2D] = []
 var _streak_t: Array[float] = []
@@ -27,7 +27,9 @@ func _ready() -> void:
 	add_child(glow)
 	_band = Polygon2D.new()
 	_band.polygon = _ribbon(_centerline, half_width)
-	_band.color = ChartStyle.CURRENT
+	var band_color := ChartStyle.CURRENT
+	band_color.a = 0.5
+	_band.color = band_color
 	_band.z_index = 1
 	add_child(_band)
 	var shine := Polygon2D.new()

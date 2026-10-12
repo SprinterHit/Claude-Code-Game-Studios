@@ -8,10 +8,12 @@ const LANDED := "landed"
 const MISSED := "missed"
 const SUPPLY_FAILED := "supply_failed"
 
-const TRACK_STEP := 0.22
-const TRACK_SAMPLES := 14
+const TRACK_STEP := 0.36
+const TRACK_SAMPLES := 22
 const CHART_FRAME := Rect2(-2400, -1700, 4800, 3400)
 const CHART_REVEAL := 64.0
+## Extra room above the ink line so the supply card and compass sit inside the chart.
+const CHART_TOP_REVEAL := 132.0
 
 var outcome: String = SAILING
 
@@ -28,7 +30,10 @@ var _hint: Label
 var _hint_card: Panel
 var _track: Line2D
 var _track_glow: Line2D
+var _track_ink: Line2D
 var _camera: Camera2D
+var _camera_zoom: Vector2 = Vector2(1.5, 1.5)
+var _camera_offset: Vector2 = Vector2(-110, 8)
 var _audio: SeaAudio
 var _screen: Control
 var _departure: Vector2 = Vector2.ZERO
@@ -41,6 +46,8 @@ var _aim_cooldown: float = 0.0
 func _ready() -> void:
 	_ship = get_node("Ship") as Ship
 	_camera = _ship.get_node("Camera2D") as Camera2D
+	_camera_zoom = _camera.zoom
+	_camera_offset = _camera.offset
 	_departure = _ship.global_position
 	_ship.heading_changed.connect(_on_heading_changed)
 	_build_chart()
@@ -102,6 +109,8 @@ func restart() -> void:
 	_ship.wind_push = Vector2.ZERO
 	_ship.current_push = Vector2.ZERO
 	_ship.clear_wake()
+	_camera.zoom = _camera_zoom
+	_camera.offset = _camera_offset
 	_hint_used = false
 	_hint_time = 0.0
 	_hint.modulate = Color(1, 1, 1, 1)
@@ -167,8 +176,46 @@ func _finish_landed() -> void:
 func _finish_missed() -> void:
 	outcome = MISSED
 	_ship.stop_sailing()
-	_show_outcome(ChartStyle.MISSED_LINE)
+	_glimpse_the_shore()
+	_show_outcome(_missed_line())
 	_audio.play_miss()
+
+
+## Names the side the one shore sits on, so a miss far from land still says where it was.
+func _missed_line() -> String:
+	return "这一趟失败：向风群岛在%s，船已经驶过" % _shore_side()
+
+
+func _shore_side() -> String:
+	var delta := _coast.sample_point() - _ship.global_position
+	var horizontal := ""
+	var vertical := ""
+	if absf(delta.x) > 70.0:
+		horizontal = "东" if delta.x > 0.0 else "西"
+	if absf(delta.y) > 70.0:
+		vertical = "南" if delta.y > 0.0 else "北"
+	if horizontal != "" and vertical != "":
+		return horizontal + vertical + "方"
+	if vertical != "":
+		return vertical + "边"
+	if horizontal != "":
+		return horizontal + "边"
+	return "旁边"
+
+
+## Pulls the chart back toward the shore when the miss happens off screen.
+func _glimpse_the_shore() -> void:
+	if _coast.intersects_view(_view_rect()):
+		return
+	var delta := _coast.sample_point() - _ship.global_position
+	if delta.length_squared() < 1.0:
+		return
+	var viewport_height := float(ProjectSettings.get_setting("display/window/size/viewport_height"))
+	var fit := viewport_height / (delta.length() + 320.0)
+	var zoom := clampf(fit, 0.42, _camera_zoom.x)
+	_camera.zoom = Vector2(zoom, zoom)
+	var reach := minf(delta.length() * 0.42, viewport_height / zoom * 0.32)
+	_camera.offset = delta.normalized() * reach
 
 
 func _finish_supply() -> void:
@@ -231,6 +278,8 @@ func _set_track_shown(shown: bool) -> void:
 	_track.visible = shown
 	if _track_glow != null:
 		_track_glow.visible = shown
+	if _track_ink != null:
+		_track_ink.visible = shown
 
 
 func _show_again() -> void:
@@ -257,7 +306,7 @@ func _on_heading_changed() -> void:
 func _keep_ship_on_the_chart() -> void:
 	var half := _view_rect().size * 0.5
 	var shift := _camera.offset
-	var reveal := Vector2(CHART_REVEAL, CHART_REVEAL)
+	var reveal := Vector2(CHART_REVEAL, CHART_TOP_REVEAL)
 	var min_pos := CHART_FRAME.position - reveal + half - shift
 	var max_pos := CHART_FRAME.end + reveal - half - shift
 	var pos := _ship.global_position
@@ -303,10 +352,11 @@ func _build_chart() -> void:
 	_coast = Coast.new()
 	add_child(_coast)
 	_add_chart_note(ChartStyle.WIND_NOTE, Vector2(860, -90), ChartStyle.WIND)
-	_add_chart_note(ChartStyle.CURRENT_NOTE, Vector2(560, 150), ChartStyle.CURRENT_LABEL)
+	_add_chart_note(ChartStyle.CURRENT_NOTE, Vector2(620, 48), ChartStyle.CURRENT_LABEL)
 
-	_track_glow = _make_track_line(8.0, Color(1, 0.98, 0.92, 0.38), 4)
-	_track = _make_track_line(3.2, ChartStyle.TRACK, 5)
+	_track_ink = _make_track_line(8.0, ChartStyle.INK, 3)
+	_track_glow = _make_track_line(14.0, Color(1, 0.96, 0.86, 0.34), 4)
+	_track = _make_track_line(4.2, ChartStyle.TRACK, 5)
 
 	_audio = SeaAudio.new()
 	add_child(_audio)
@@ -320,12 +370,12 @@ func _build_chart() -> void:
 	layer.add_child(_screen)
 
 	_supply = SupplyStore.new()
-	_supply.position = Vector2(28, 24)
+	_supply.position = Vector2(28, 84)
 	_screen.add_child(_supply)
 
 	_hint_card = Panel.new()
 	_hint_card.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	_hint_card.size = Vector2(236, 46)
+	_hint_card.size = Vector2(392, 48)
 	_hint_card.add_theme_stylebox_override("panel", _paper_chip(16))
 	_screen.add_child(_hint_card)
 	_hint = Label.new()
@@ -504,7 +554,7 @@ func _make_track_line(width: float, color: Color, z: int) -> Line2D:
 
 func _add_compass(screen: Control) -> void:
 	var rose := CompassRose.new()
-	rose.position = Vector2(1136, 18)
+	rose.position = Vector2(1136, 204)
 	screen.add_child(rose)
 
 
@@ -513,11 +563,11 @@ func _place_hint(delta: float) -> void:
 		return
 	if not _hint_used:
 		_hint_time += delta
-		if _hint_time > 8.0:
+		if _hint_time > 16.0:
 			_hide_hint()
 			return
 	var screen_point: Vector2 = get_viewport().get_canvas_transform() * _ship.global_position
-	_hint_card.position = screen_point + Vector2(-118, -96)
+	_hint_card.position = screen_point + Vector2(-250, -112)
 
 
 func _hide_hint() -> void:
@@ -536,9 +586,13 @@ func _draw_track() -> void:
 		var wind_push := _wind.forecast_push(pos)
 		var current_push := _current.vector_at(pos)
 		pos += (_ship.heading * _ship.sail_speed + wind_push + current_push) * TRACK_STEP
+		pos.x = clampf(pos.x, CHART_FRAME.position.x, CHART_FRAME.end.x)
+		pos.y = clampf(pos.y, CHART_FRAME.position.y, CHART_FRAME.end.y)
 		points.append(pos)
 	_track.points = points
 	_track_glow.points = points
+	if _track_ink != null:
+		_track_ink.points = points
 
 
 func _apply_launch_pose() -> void:

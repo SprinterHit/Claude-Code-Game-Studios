@@ -3,7 +3,7 @@ extends Control
 ## Ink gauge for the stores on this one voyage. It only counts down.
 
 
-@export var seconds_afloat: float = 42.0
+@export var seconds_afloat: float = 26.0
 
 var remaining: float = 1.0
 

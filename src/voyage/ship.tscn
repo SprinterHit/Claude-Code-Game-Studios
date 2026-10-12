@@ -7,7 +7,7 @@
 z_index = 6
 scale = Vector2(1.4, 1.4)
 script = ExtResource("1_ship")
-sail_speed = 110.0
+sail_speed = 56.0
 initial_heading = Vector2(-1, 0)
 
 [node name="Sprite" type="Node2D" parent="."]
