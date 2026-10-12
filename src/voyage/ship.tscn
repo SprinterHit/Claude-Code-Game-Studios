@@ -4,6 +4,7 @@
 
 [node name="Ship" type="Node2D"]
 z_index = 6
+scale = Vector2(1.32, 1.32)
 script = ExtResource("1_ship")
 sail_speed = 110.0
 initial_heading = Vector2(-1, 0)
@@ -36,7 +37,7 @@ polygon = PackedVector2Array(-34, -3.5, -16, 0, -34, 3.5)
 [node name="Heading" type="Line2D" parent="."]
 width = 1.5
 default_color = Color(0.97, 0.94, 0.86, 0.7)
-points = PackedVector2Array(40, 0, 108, 0)
+points = PackedVector2Array(42, 0, 68, 0)
 
 [node name="Camera2D" type="Camera2D" parent="."]
 offset = Vector2(-110, 8)

@@ -1,12 +1,15 @@
 class_name Voyage
 extends Node2D
-## One voyage, from casting off to a landing or a failure. It does not start another.
+## One voyage on this chart. It can be sailed again. It does not open another shore.
 
 
 const SAILING := "sailing"
 const LANDED := "landed"
 const MISSED := "missed"
 const SUPPLY_FAILED := "supply_failed"
+
+const TRACK_STEP := 0.22
+const TRACK_SAMPLES := 14
 
 var outcome: String = SAILING
 
@@ -17,14 +20,35 @@ var _coast: Coast
 var _supply: SupplyStore
 var _geography: GeographyLine
 var _outcome_line: Label
+var _again: Button
+var _hint: Label
+var _track: Line2D
 var _camera: Camera2D
+var _audio: SeaAudio
+var _screen: Control
+var _departure: Vector2 = Vector2.ZERO
+var _land_seen: bool = false
+var _hint_used: bool = false
+var _hint_time: float = 0.0
+var _aim_cooldown: float = 0.0
 
 
 func _ready() -> void:
 	_ship = get_node("Ship") as Ship
 	_camera = _ship.get_node("Camera2D") as Camera2D
+	_departure = _ship.global_position
+	_ship.heading_changed.connect(_on_heading_changed)
 	_build_chart()
 	_apply_launch_pose()
+	if outcome != SAILING:
+		_hint.visible = false
+		_track.visible = false
+
+
+func _process(delta: float) -> void:
+	_aim_cooldown = maxf(0.0, _aim_cooldown - delta)
+	_place_hint(delta)
+	_draw_track()
 
 
 func _physics_process(delta: float) -> void:
@@ -34,18 +58,46 @@ func _physics_process(delta: float) -> void:
 func advance(delta: float) -> void:
 	if outcome != SAILING:
 		return
+	if not _wind.shifted and _ship.global_position.x <= _wind.shift_x:
+		_wind.shift()
 	_ship.wind_push = _wind.vector_at(_ship.global_position)
 	_ship.current_push = _current.vector_at(_ship.global_position)
 	_ship.integrate(delta)
 	_supply.tick(delta)
+	_draw_track()
 	var view := _view_rect()
+	var coast_visible := _coast.intersects_view(view)
+	if coast_visible:
+		_land_seen = true
 	var coast_state := _coast.evaluate(_ship.global_position)
 	if coast_state == Coast.LANDED:
 		_finish_landed()
-	elif coast_state == Coast.PASSED:
+	elif coast_state == Coast.PASSED and coast_visible:
 		_finish_missed()
-	elif _supply.is_empty() and not _coast.intersects_view(view):
+	elif _supply.is_empty() and not _land_seen:
 		_finish_supply()
+
+
+func restart() -> void:
+	outcome = SAILING
+	_land_seen = false
+	_wind.reset()
+	_coast.conceal()
+	_supply.refill()
+	_geography.visible = false
+	_outcome_line.visible = false
+	_hide_again()
+	_ship.resume_sailing()
+	_ship.global_position = _departure
+	_ship.heading = _ship.initial_heading
+	_ship.wind_push = Vector2.ZERO
+	_ship.current_push = Vector2.ZERO
+	_ship.clear_wake()
+	_hint_used = false
+	_hint_time = 0.0
+	_hint.visible = true
+	_hint.modulate = Color(1, 1, 1, 1)
+	_track.visible = true
 
 
 func wind_field() -> WindField:
@@ -72,30 +124,104 @@ func outcome_text() -> String:
 	return _outcome_line.text if _outcome_line.visible else ""
 
 
+func again_visible() -> bool:
+	return _again.visible
+
+
+func land_seen() -> bool:
+	return _land_seen
+
+
+func track_points() -> PackedVector2Array:
+	return _track.points
+
+
+func hint_text() -> String:
+	return _hint.text
+
+
 func _finish_landed() -> void:
 	outcome = LANDED
+	_ship.global_position = _coast.berth_beside(_ship.global_position)
+	_ship.heading = _coast.berth_heading(_ship.global_position)
+	_seat_hull_in_the_water()
 	_ship.stop_sailing()
 	_coast.reveal()
 	_geography.show_reason()
 	_outcome_line.visible = false
+	_track.visible = false
+	_show_again()
+	_audio.play_landing()
 
 
 func _finish_missed() -> void:
 	outcome = MISSED
 	_ship.stop_sailing()
 	_show_outcome(ChartStyle.MISSED_LINE)
+	_audio.play_miss()
 
 
 func _finish_supply() -> void:
 	outcome = SUPPLY_FAILED
 	_ship.stop_sailing()
 	_show_outcome(ChartStyle.SUPPLY_LINE)
+	_audio.play_miss()
+
+
+func _seat_hull_in_the_water() -> void:
+	var outward := (_ship.global_position - _coast.sample_point()).normalized()
+	if outward.length_squared() < 0.01:
+		outward = Vector2.RIGHT
+	for _step: int in 6:
+		if _hull_clears_the_shore():
+			return
+		_ship.global_position += outward * 14.0
+
+
+func _hull_clears_the_shore() -> bool:
+	var reach := _ship.scale.x
+	var side := _ship.heading.rotated(PI * 0.5)
+	var toward_shore := (_coast.sample_point() - _ship.global_position).normalized()
+	if toward_shore.length_squared() < 0.01:
+		toward_shore = Vector2.LEFT
+	var samples: Array[Vector2] = [
+		Vector2(46, 0), Vector2(-40, 0), Vector2(22, 13), Vector2(22, -13),
+		Vector2(-32, 10), Vector2(-32, -10), Vector2(0, 13), Vector2(0, -13),
+	]
+	for sample: Vector2 in samples:
+		var world: Vector2 = _ship.global_position + _ship.heading * sample.x * reach + side * sample.y * reach
+		world += toward_shore * 14.0
+		if _coast.evaluate(world) == Coast.LANDED:
+			return false
+	return true
 
 
 func _show_outcome(line: String) -> void:
 	_geography.visible = false
 	_outcome_line.text = line
 	_outcome_line.visible = true
+	_track.visible = false
+	_show_again()
+
+
+func _show_again() -> void:
+	_again.visible = true
+	_again.mouse_filter = Control.MOUSE_FILTER_STOP
+
+
+func _hide_again() -> void:
+	_again.visible = false
+	_again.mouse_filter = Control.MOUSE_FILTER_IGNORE
+
+
+func _on_heading_changed() -> void:
+	_hint_used = true
+	_hide_hint()
+	if _aim_cooldown > 0.0:
+		return
+	_aim_cooldown = 0.14
+	if _audio != null:
+		_audio.play_aim()
 
 
 func _view_rect() -> Rect2:
@@ -130,21 +256,44 @@ func _build_chart() -> void:
 	add_child(_wind)
 	_coast = Coast.new()
 	add_child(_coast)
+	_add_chart_note(ChartStyle.WIND_NOTE, Vector2(860, -90), ChartStyle.WIND)
+	_add_chart_note(ChartStyle.CURRENT_NOTE, Vector2(560, 150), ChartStyle.CURRENT_STREAK)
+
+	_track = Line2D.new()
+	_track.top_level = true
+	_track.width = 2.4
+	_track.default_color = ChartStyle.TRACK
+	_track.joint_mode = Line2D.LINE_JOINT_ROUND
+	_track.begin_cap_mode = Line2D.LINE_CAP_ROUND
+	_track.end_cap_mode = Line2D.LINE_CAP_ROUND
+	_track.z_index = 5
+	add_child(_track)
+
+	_audio = SeaAudio.new()
+	add_child(_audio)
 
 	var layer := CanvasLayer.new()
 	layer.layer = 10
 	add_child(layer)
-	var screen := Control.new()
-	screen.set_anchors_preset(Control.PRESET_FULL_RECT)
-	screen.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	layer.add_child(screen)
+	_screen = Control.new()
+	_screen.set_anchors_preset(Control.PRESET_FULL_RECT)
+	_screen.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	layer.add_child(_screen)
 
 	_supply = SupplyStore.new()
 	_supply.position = Vector2(28, 24)
-	screen.add_child(_supply)
+	_screen.add_child(_supply)
+
+	_hint = Label.new()
+	_hint.text = ChartStyle.HINT_LINE
+	_hint.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	_hint.add_theme_font_override("font", ChartStyle.FONT)
+	_hint.add_theme_font_size_override("font_size", 20)
+	_hint.add_theme_color_override("font_color", ChartStyle.PAPER)
+	_screen.add_child(_hint)
 
 	_geography = GeographyLine.new()
-	screen.add_child(_geography)
+	_screen.add_child(_geography)
 
 	_outcome_line = Label.new()
 	_outcome_line.visible = false
@@ -158,30 +307,102 @@ func _build_chart() -> void:
 	_outcome_line.add_theme_font_override("font", ChartStyle.FONT)
 	_outcome_line.add_theme_font_size_override("font_size", 22)
 	_outcome_line.add_theme_color_override("font_color", ChartStyle.VERMILION)
-	screen.add_child(_outcome_line)
-	_add_compass(screen)
+	_screen.add_child(_outcome_line)
+
+	_again = Button.new()
+	_again.text = ChartStyle.AGAIN_LINE
+	_again.visible = false
+	_again.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	_again.focus_mode = Control.FOCUS_NONE
+	_again.set_anchors_preset(Control.PRESET_CENTER_BOTTOM)
+	_again.offset_left = -120.0
+	_again.offset_right = 120.0
+	_again.offset_top = -196.0
+	_again.offset_bottom = -136.0
+	var plate := StyleBoxFlat.new()
+	plate.bg_color = ChartStyle.PAPER
+	plate.border_color = ChartStyle.INK
+	plate.set_border_width_all(2)
+	plate.set_corner_radius_all(3)
+	plate.content_margin_left = 16.0
+	plate.content_margin_right = 16.0
+	_again.add_theme_stylebox_override("normal", plate)
+	_again.add_theme_stylebox_override("hover", plate)
+	_again.add_theme_stylebox_override("pressed", plate)
+	_again.add_theme_font_override("font", ChartStyle.FONT)
+	_again.add_theme_font_size_override("font_size", 22)
+	_again.add_theme_color_override("font_color", ChartStyle.INK)
+	_again.add_theme_color_override("font_hover_color", ChartStyle.INK)
+	_again.add_theme_color_override("font_pressed_color", ChartStyle.VERMILION)
+	_again.pressed.connect(restart)
+	_screen.add_child(_again)
+	_add_compass(_screen)
+	_draw_track()
 
 
 func _add_departure_mark() -> void:
 	var mark := Line2D.new()
 	mark.width = 1.6
 	mark.default_color = Color(ChartStyle.PAPER, 0.85)
-	var origin := Vector2(620, 20)
-	mark.add_point(origin + Vector2(-16, 0))
-	mark.add_point(origin + Vector2(16, 0))
+	mark.add_point(_departure + Vector2(-16, 0))
+	mark.add_point(_departure + Vector2(16, 0))
 	add_child(mark)
 	var stem := Line2D.new()
 	stem.width = 1.6
 	stem.default_color = Color(ChartStyle.PAPER, 0.85)
-	stem.add_point(origin + Vector2(0, -16))
-	stem.add_point(origin + Vector2(0, 16))
+	stem.add_point(_departure + Vector2(0, -16))
+	stem.add_point(_departure + Vector2(0, 16))
 	add_child(stem)
+
+
+func _add_chart_note(text: String, at: Vector2, color: Color) -> void:
+	var note := Label.new()
+	note.text = text
+	note.position = at
+	note.z_index = 4
+	note.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	note.add_theme_font_override("font", ChartStyle.FONT)
+	note.add_theme_font_size_override("font_size", 22)
+	note.add_theme_color_override("font_color", color)
+	add_child(note)
 
 
 func _add_compass(screen: Control) -> void:
 	var rose := CompassRose.new()
 	rose.position = Vector2(1136, 18)
 	screen.add_child(rose)
+
+
+func _place_hint(delta: float) -> void:
+	if not _hint.visible:
+		return
+	if not _hint_used:
+		_hint_time += delta
+		if _hint_time > 8.0:
+			_hide_hint()
+			return
+	var screen_point: Vector2 = get_viewport().get_canvas_transform() * _ship.global_position
+	_hint.position = screen_point + Vector2(-118, -82)
+
+
+func _hide_hint() -> void:
+	_hint.visible = false
+
+
+func _draw_track() -> void:
+	if outcome != SAILING:
+		_track.visible = false
+		return
+	_track.visible = true
+	var points := PackedVector2Array()
+	var pos := _ship.global_position
+	points.append(pos)
+	for _index: int in TRACK_SAMPLES:
+		var wind_push := _wind.forecast_push(pos)
+		var current_push := _current.vector_at(pos)
+		pos += (_ship.heading * _ship.sail_speed + wind_push + current_push) * TRACK_STEP
+		points.append(pos)
+	_track.points = points
 
 
 func _apply_launch_pose() -> void:
@@ -191,11 +412,14 @@ func _apply_launch_pose() -> void:
 		advance(0.05)
 	elif args.has("approach"):
 		_ship.global_position = _coast.sample_point() + Vector2(260, -10)
+	elif args.has("shifted"):
+		_ship.global_position = Vector2(_wind.shift_x - 20.0, 90.0)
+		_wind.shift()
 	elif args.has("missed"):
 		_ship.global_position = Vector2(_coast.pass_line_x - 36.0, _coast.sample_point().y - 210.0)
 		advance(0.05)
 	elif args.has("supply"):
-		_ship.global_position = Vector2(1100, -40)
+		_ship.global_position = Vector2(1400, -40)
 		_supply.remaining = 0.0
 		_supply.queue_redraw()
 		advance(0.05)

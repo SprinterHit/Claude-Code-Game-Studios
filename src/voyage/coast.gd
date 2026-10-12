@@ -66,6 +66,57 @@ func _local_center() -> Vector2:
 	return sum / float(_outline.size())
 
 
+func conceal() -> void:
+	revealed = false
+	if _fill != null:
+		_fill.visible = false
+	if _shoal != null:
+		_shoal.visible = false
+	if _name != null:
+		_name.visible = false
+	for hill: Polygon2D in _hills:
+		hill.visible = false
+
+
+## A point in the water just outside the ink line, beside [param from_point].
+## The offset clears the hull, so the ship sits in the water rather than on the shore.
+func berth_beside(from_point: Vector2) -> Vector2:
+	var closest := _closest_outline_point(to_local(from_point))
+	var outward := _outward_from(closest)
+	for step: int in 8:
+		var landed := closest + outward * (56.0 + float(step) * 14.0)
+		if not Geometry2D.is_point_in_polygon(landed, _outline):
+			return to_global(landed)
+	return to_global(closest + outward * 160.0)
+
+
+## Heading that lays the ship along the ink, bow toward the west.
+func berth_heading(at_world: Vector2) -> Vector2:
+	var outward := _outward_from(to_local(at_world))
+	var along := Vector2(-outward.y, outward.x)
+	if along.x > 0.0:
+		along = -along
+	return along
+
+
+func _closest_outline_point(local_from: Vector2) -> Vector2:
+	var closest := _outline[0]
+	var best := local_from.distance_squared_to(closest)
+	for point: Vector2 in _outline:
+		var distance := local_from.distance_squared_to(point)
+		if distance < best:
+			best = distance
+			closest = point
+	return closest
+
+
+func _outward_from(local_point: Vector2) -> Vector2:
+	var outward := (local_point - _local_center()).normalized()
+	if outward.length_squared() < 0.01:
+		return Vector2.RIGHT
+	return outward
+
+
 func reveal() -> void:
 	if revealed:
 		return

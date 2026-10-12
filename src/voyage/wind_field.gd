@@ -1,18 +1,24 @@
 class_name WindField
 extends Node2D
-## Trade-wind arrows. The same push moves the ship everywhere on this chart.
+## Trade-wind arrows. The push turns once, after the ship is close enough to see the shore.
 
 
 @export var push: Vector2 = Vector2(-64, -28)
+@export var shifted_push: Vector2 = Vector2(-48, 36)
+@export var shift_x: float = 180.0
 @export var field_origin: Vector2 = Vector2(-160, -420)
 @export var field_size: Vector2 = Vector2(1500, 980)
 @export var spacing: float = 168.0
 
+var shifted: bool = false
+
+var _opening_push: Vector2 = Vector2(-64, -28)
 var _arrows: Array[Polygon2D] = []
 
 
 func _ready() -> void:
 	z_index = 2
+	_opening_push = push
 	_build_arrows()
 
 
@@ -22,6 +28,27 @@ func arrow_count() -> int:
 
 func vector_at(_world_point: Vector2) -> Vector2:
 	return push
+
+
+## Push used by the predicted track, including the turn that has not happened yet.
+func forecast_push(world_point: Vector2) -> Vector2:
+	if shifted or world_point.x <= shift_x:
+		return shifted_push
+	return _opening_push
+
+
+func shift() -> void:
+	if shifted:
+		return
+	shifted = true
+	push = shifted_push
+	_aim_arrows()
+
+
+func reset() -> void:
+	shifted = false
+	push = _opening_push
+	_aim_arrows()
 
 
 func _process(delta: float) -> void:
@@ -52,6 +79,12 @@ func _build_arrows() -> void:
 			arrow.z_index = 2
 			add_child(arrow)
 			_arrows.append(arrow)
+
+
+func _aim_arrows() -> void:
+	var angle := push.angle()
+	for arrow: Polygon2D in _arrows:
+		arrow.rotation = angle
 
 
 func _wrap(point: Vector2, bounds: Rect2) -> Vector2:

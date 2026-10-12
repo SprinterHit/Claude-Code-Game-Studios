@@ -1,5 +1,8 @@
 class_name Ship
 extends Node2D
+
+## Emitted when a touch or press sets a new heading.
+signal heading_changed
 ## Player ship for one voyage.
 ##
 ## Sails at [member sail_speed] along [member heading], then adds the wind and
@@ -82,15 +85,36 @@ func _unhandled_input(event: InputEvent) -> void:
 ## Points the ship from its position toward [param world_point] and sails that way.
 ## A point with no direction from the ship leaves [member heading] unchanged.
 func set_heading_toward(world_point: Vector2) -> void:
+	var previous_heading := heading
 	var offset: Vector2 = world_point - global_position
 	if offset.length_squared() < MIN_AIM_DISTANCE_SQUARED:
 		return
 	heading = offset
+	if not heading.is_equal_approx(previous_heading):
+		heading_changed.emit()
 
 
 ## Ends movement and aim for this voyage. The ship stays where it is.
 func stop_sailing() -> void:
 	sailing = false
+	_show_heading_tick(false)
+
+
+## Starts another run of the same voyage. The heading tick comes back.
+func resume_sailing() -> void:
+	sailing = true
+	_show_heading_tick(true)
+
+
+func _show_heading_tick(visible_tick: bool) -> void:
+	var tick := get_node_or_null("Heading") as Line2D
+	if tick != null:
+		tick.visible = visible_tick
+
+
+func clear_wake() -> void:
+	if _wake != null:
+		_wake.clear_points()
 
 
 func _aim_at_viewport_position(viewport_position: Vector2) -> void:
