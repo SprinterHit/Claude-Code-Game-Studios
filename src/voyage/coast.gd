@@ -155,16 +155,26 @@ func _build_reveal() -> void:
 		shadow.append(point + Vector2(7, 10))
 	_add_dress(shadow, Color(0.05, 0.18, 0.22, 0.22), 2)
 	_add_dress(_outline, ChartStyle.SHORE, 3)
-	_add_dress(_inset(0.16), ChartStyle.GRASS, 3)
-	_add_dress(_inset(0.4), ChartStyle.GRASS_DEEP, 3)
-	_add_hill(center + Vector2(-34, -8), 46.0)
-	_add_hill(center + Vector2(32, 22), 34.0)
-	_add_hill(center + Vector2(-6, 36), 26.0)
-	_add_palm(center + Vector2(-46, -16))
-	_add_palm(center + Vector2(34, 6))
-	_add_palm(center + Vector2(-12, 48))
-	_add_hut(center + Vector2(6, 18))
-	_add_flowers(center)
+	_add_dress(_inset(0.14), ChartStyle.GRASS, 3)
+	_add_dress(_inset(0.32), ChartStyle.CANOPY, 3)
+	_add_canopy(center + Vector2(-8, -4), 28.0)
+	_add_canopy(center + Vector2(24, 8), 22.0)
+	_add_canopy(center + Vector2(-18, 30), 20.0)
+	_add_canopy(center + Vector2(30, 36), 16.0)
+	_add_canopy(center + Vector2(-40, 8), 18.0)
+	## One volcanic cone. The Windward Islands rise straight out of the trade-wind sea.
+	_add_peak(center + Vector2(-30, -18), 38.0)
+	_add_dress(_disc(center + Vector2(10, 28), 32.0, 16), ChartStyle.CLEARING, 4)
+	_add_garden(center + Vector2(28, 18))
+	_add_garden(center + Vector2(-6, 44))
+	## Thatched houses of the shore people. A red European roof does not belong on this first landfall.
+	_add_thatch(center + Vector2(6, 22), 13.0)
+	_add_thatch(center + Vector2(22, 34), 9.0)
+	_add_thatch(center + Vector2(-10, 36), 8.0)
+	_add_palm(center + Vector2(46, -4))
+	_add_palm(center + Vector2(38, 28))
+	_add_palm(center + Vector2(18, 52))
+	_add_palm(center + Vector2(-36, 46))
 	var name_at := center + Vector2(-52, -92)
 	_add_name_plaque(name_at)
 	var name := Label.new()
@@ -180,9 +190,16 @@ func _build_reveal() -> void:
 	_dress.append(name)
 
 
-func _add_hill(at: Vector2, radius: float) -> void:
-	_add_dress(_disc(at, radius, 16), ChartStyle.HILL, 4)
-	_add_dress(_disc(at + Vector2(-radius * 0.18, -radius * 0.28), radius * 0.62, 12), ChartStyle.HILL_LIGHT, 4)
+func _add_canopy(at: Vector2, radius: float) -> void:
+	_add_dress(_disc(at, radius, 14), ChartStyle.CANOPY, 4)
+	_add_dress(_disc(at + Vector2(-radius * 0.22, -radius * 0.2), radius * 0.48, 10), ChartStyle.CANOPY_LIGHT, 4)
+
+
+func _add_peak(at: Vector2, radius: float) -> void:
+	_add_dress(_disc(at, radius, 16), ChartStyle.GRASS_DEEP, 4)
+	_add_dress(_disc(at + Vector2(-radius * 0.08, -radius * 0.12), radius * 0.62, 12), ChartStyle.CANOPY, 4)
+	_add_dress(_disc(at, radius * 0.34, 10), ChartStyle.ROCK, 4)
+	_add_dress(_disc(at, radius * 0.12, 8), ChartStyle.CRATER, 4)
 
 
 func _add_palm(root: Vector2) -> void:
@@ -200,28 +217,16 @@ func _add_palm(root: Vector2) -> void:
 	_add_dress(_disc(root + Vector2(-5, -8), 11.0, 10), ChartStyle.HILL_LIGHT, 4)
 
 
-func _add_hut(at: Vector2) -> void:
-	_add_dress(PackedVector2Array([
-		at + Vector2(-11, 8), at + Vector2(11, 8), at + Vector2(11, -2), at + Vector2(-11, -2),
-	]), ChartStyle.PAPER, 4)
-	_add_dress(PackedVector2Array([
-		at + Vector2(-14, -2), at + Vector2(0, -16), at + Vector2(14, -2),
-	]), ChartStyle.VERMILION, 4)
-	_add_dress(PackedVector2Array([
-		at + Vector2(-2.2, 8), at + Vector2(2.2, 8), at + Vector2(2.2, 1.5), at + Vector2(-2.2, 1.5),
-	]), ChartStyle.WOOD_DARK, 4)
+## Oval palm-thatch roof seen from above, with a dark doorway on the south edge.
+func _add_thatch(at: Vector2, radius: float) -> void:
+	_add_dress(_disc(at, radius, 14), ChartStyle.THATCH_DARK, 4)
+	_add_dress(_disc(at + Vector2(-radius * 0.14, -radius * 0.16), radius * 0.68, 12), ChartStyle.THATCH, 4)
+	_add_dress(_disc(at + Vector2(0, radius * 0.62), radius * 0.2, 8), ChartStyle.WOOD_DARK, 4)
 
 
-func _add_flowers(center: Vector2) -> void:
-	var spots: Array[Vector2] = [
-		center + Vector2(-20, 8), center + Vector2(18, -6),
-		center + Vector2(-8, 28), center + Vector2(24, 34),
-	]
-	var colors: Array[Color] = [
-		Color("f2d15a"), Color("f29a9a"), Color("fff4ea"), Color("f2d15a"),
-	]
-	for index: int in spots.size():
-		_add_dress(_disc(spots[index], 3.4, 7), colors[index], 4)
+func _add_garden(at: Vector2) -> void:
+	_add_dress(_disc(at, 6.5, 8), Color("d2b85a"), 4)
+	_add_dress(_disc(at + Vector2(-1.4, -1.2), 3.2, 7), Color("e6d48a"), 4)
 
 
 func _add_name_plaque(at: Vector2) -> void:
