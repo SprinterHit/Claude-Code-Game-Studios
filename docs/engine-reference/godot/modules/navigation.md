@@ -1,8 +1,11 @@
 # Godot Navigation — Quick Reference
 
-Last verified: 2026-02-12 | Engine: Godot 4.6
+Last verified: 2026-10-11 for the 4.7 note. Sections through 4.6 were last verified 2026-02-12 and were not re-fetched this run. | Engine: Godot 4.7.2
 
 ## What Changed Since ~4.3 (LLM Cutoff)
+
+### 4.7 Changes
+- **4.7.1**: navigation agents were added to the avoidance simulation after pause and resume even when they should not be. Fixed in GH-120249. The 4.6 → 4.7 migration page lists no navigation API break.
 
 ### 4.5 Changes
 - **Dedicated 2D navigation server**: No longer a proxy to 3D NavigationServer

@@ -1,8 +1,13 @@
 # Godot Animation — Quick Reference
 
-Last verified: 2026-02-12 | Engine: Godot 4.6
+Last verified: 2026-10-11 for the 4.7 notes. Sections through 4.6 were last verified 2026-02-12 and were not re-fetched this run. | Engine: Godot 4.7.2
 
 ## What Changed Since ~4.3 (LLM Cutoff)
+
+### 4.7 Changes
+- **`Animation.length`** metadata changed from `float` to `double`. GDScript stays compatible. C# binary and source do not (GH-116394).
+- **`LookAtModifier3D.relative`** default changed from `true` to `false`.
+- **`AnimationNodeBlendSpace1D.add_blend_point`** and **`AnimationNodeBlendSpace2D.add_blend_point`** gained an optional `name`. GDScript-compatible (GH-110369).
 
 ### 4.6 Changes
 - **IK system fully restored**: Complete inverse kinematics for 3D skeletons

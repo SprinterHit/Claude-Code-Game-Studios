@@ -1,8 +1,12 @@
 # Godot Physics — Quick Reference
 
-Last verified: 2026-02-12 | Engine: Godot 4.6
+Last verified: 2026-10-11 for the 4.7 notes. Sections through 4.6 were last verified 2026-02-12 and were not re-fetched this run. | Engine: Godot 4.7.2
 
 ## What Changed Since ~4.3 (LLM Cutoff)
+
+### 4.7 Changes
+- **`CollisionShape2D.one_way_collision_direction`**: one-way collision is no longer locked to local up. `PhysicsServer2D.body_set_shape_as_one_way_collision` gained an optional `direction`. The extension method `_body_set_shape_as_one_way_collision` added a required `direction` and is not source-compatible. GH-104736
+- **Jolt 3D only**: `WorldBoundaryShape3D.plane.d` sign flipped versus 4.6 (GH-118948). `SoftBody3D` defaults to 1 kg total and its `linear_stiffness` was retuned (GH-116041). `Area3D` reports `SoftBody3D` overlaps (GH-114198). This project uses Godot Physics 2D.
 
 ### 4.6 Changes
 - **Jolt Physics is the DEFAULT 3D engine** for new projects

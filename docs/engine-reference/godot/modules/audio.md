@@ -1,11 +1,15 @@
 # Godot Audio — Quick Reference
 
-Last verified: 2026-02-12 | Engine: Godot 4.6
+Last verified: 2026-10-11 for the 4.7 notes. Sections through 4.6 were last verified 2026-02-12 and were not re-fetched this run. | Engine: Godot 4.7.2
 
 ## What Changed Since ~4.3 (LLM Cutoff)
 
 No major breaking changes to the audio API in 4.4–4.6. The core audio system
 remains stable. Key updates are workflow improvements:
+
+### 4.7 Changes
+- **`AudioEffectSpectrumAnalyzer.tap_back_pos` removed** (GH-114355). The migration page states no replacement.
+- **`AudioStreamPlayer.area_mask` default is `0`**, was `1` (GH-107679). An `Area2D` or `Area3D` bus override that relied on the default layer-1 mask must set that mask again.
 
 ### 4.6 Changes
 - **No audio-specific breaking changes** in this release

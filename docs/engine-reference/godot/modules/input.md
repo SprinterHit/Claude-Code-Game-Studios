@@ -1,8 +1,13 @@
 # Godot Input — Quick Reference
 
-Last verified: 2026-02-12 | Engine: Godot 4.6
+Last verified: 2026-10-11 for the 4.7 notes. Sections through 4.6 were last verified 2026-02-12 and were not re-fetched this run. | Engine: Godot 4.7.2
 
 ## What Changed Since ~4.3 (LLM Cutoff)
+
+### 4.7 Changes
+- **Device IDs**: mouse and keyboard are no longer device `0`. Compare `InputEvent.device` with `InputEvent.DEVICE_ID_MOUSE` and `InputEvent.DEVICE_ID_KEYBOARD`. A joypad may use `0` (GH-116274).
+- **4.7.1**: Android soft-keyboard backspace deletes existing text (GH-119798). A popup menu does not open the virtual keyboard by itself (GH-120768).
+- **4.7.2**: `BaseButton` input when `enable_long_press_as_right_click` is true (GH-120962).
 
 ### 4.6 Changes
 - **Dual-focus system**: Mouse/touch focus is now separate from keyboard/gamepad focus

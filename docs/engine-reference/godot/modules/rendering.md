@@ -1,8 +1,15 @@
 # Godot Rendering — Quick Reference
 
-Last verified: 2026-02-12 | Engine: Godot 4.6
+Last verified: 2026-10-11 for the 4.7 notes. Sections through 4.6 were last verified 2026-02-12 and were not re-fetched this run. | Engine: Godot 4.7.2
 
 ## What Changed Since ~4.3 (LLM Cutoff)
+
+### 4.7 Changes
+- **HDR output** is listed for Windows, macOS, iOS, visionOS, and Linux (Wayland). Web and Android are not in that list. Compatibility support is **NOT SOURCEABLE** from the 4.7 release post.
+- **`LinearToSRGB`** no longer clamps to `[0.0, 1.0]` on Mobile or Forward+ (GH-113956).
+- **`CanvasItem` lines** skip the antialiasing feather, so they look thinner (GH-105122).
+- **`DrawableTexture2D`** draws on a texture. **`GradientTexture2D.FILL_CONIC`** adds a conic fill. **`AreaLight3D`** is a 3D rectangular light.
+- **`ImageTexture.get_format`** and **`PortableCompressedTexture2D.get_format`** moved to `Texture2D` (GH-109004).
 
 ### 4.6 Changes
 - **D3D12 is the default rendering backend on Windows** (was Vulkan)
